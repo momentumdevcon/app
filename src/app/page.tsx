@@ -7,8 +7,8 @@ import clsx from "clsx";
 
 export default function SchedulePage() {
   return (
-    <main className="p-10">
-      <h1 className="text-4xl font-semibold">Momentum Schedule</h1>
+    <main className="px-10">
+      <h1 className="text-4xl font-semibold my-4">Schedule</h1>
       <Suspense fallback={<p>Loading...</p>}>
         <Schedule />
       </Suspense>
