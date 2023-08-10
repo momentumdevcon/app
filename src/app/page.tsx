@@ -7,7 +7,7 @@ import clsx from "clsx";
 
 export default function SchedulePage() {
   return (
-    <main className="px-10">
+    <main className="px-5">
       <h1 className="text-4xl font-semibold my-4">Schedule</h1>
       <Suspense fallback={<p>Loading...</p>}>
         <Schedule />
@@ -16,10 +16,25 @@ export default function SchedulePage() {
   );
 }
 
+function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
+  const now = dayjs();
+
+  const start = dayjs(startsAt);
+  const end = dayjs(endsAt);
+
+  const startDiff = start.diff(now, "minute") % (60 * 24);
+  const endDiff = end.diff(now, "minute") % (60 * 24);
+  console.log({ startDiff, endDiff });
+
+  if (startDiff < 30) return "soon";
+  if (endDiff < 50) return "started";
+  if (endDiff > 900) return "ended";
+}
+
 type TimeSlot = [string, string, Session[]];
 
 async function Schedule() {
-  const { rooms, speakers, sessions, categories } = await getData();
+  const { rooms, sessions, categories } = await getData();
 
   const timeSlots = sessions.reduce<TimeSlot[]>((acc, session) => {
     const slot = acc.find(
@@ -37,49 +52,82 @@ async function Schedule() {
 
   return (
     <>
-      <ConsoleLog {...{ rooms, speakers, sessions, categories }} />
+      {/* <ConsoleLog {...{ rooms, speakers, sessions, categories }} /> */}
       {timeSlots.map(([start, end, sessions], i) => (
-        <TimeSlotComponent
-          key={i}
-          header={
-            <h2>
-              {dayjs(start).format("h:mm A")} to {dayjs(end).format("h:mm A")}
-            </h2>
-          }
-          content={sessions.map((session) => (
-            <div
-              key={session.id}
-              className="border rounded-xl p-3 my-2 border-gray-700 flex flex-col gap-2"
-            >
-              <h3 className="text-sm">{session.title}</h3>
-              <p className="text-xs opacity-90">
-                {rooms.find((room) => room.id === session.roomId)?.name}
-              </p>
-              {session.speakers.map((speakerId) => (
-                <SpeakerComponent key={speakerId} id={speakerId} />
-              ))}
-              <div className="">
-                {categories.map((category) =>
-                  category.items
-                    .filter((item) => session.categoryItems.includes(item.id))
-                    .map((item) => (
-                      <span
-                        key={item.id}
-                        // className="text-xs bg-gray-700 px-1 py-1 rounded mr-2"
-                        className={clsx(
-                          "text-[11px] px-1 py-1 rounded mr-2 bg-opacity-70",
-                          category.title === "Level" && "bg-[#145bff]",
-                          category.title === "Tags" && "bg-[#03969b]"
-                        )}
-                      >
-                        {item.name}
-                      </span>
-                    ))
-                )}
-              </div>
+        <>
+          {/* {isStartingSoonOrStarted(start, end) === 1 && (
+            <div className="flex flex-col items-center justify-center text-center pt-2 text-green-500 font-bold">
+              <p className="">Starting soon</p>
             </div>
-          ))}
-        />
+          )}
+
+          {isStartingSoonOrStarted(start, end) === 2 && (
+            <div className="flex flex-col items-center justify-center text-center pt-2 text-yellow-400 font-bold">
+              <p className="">In progress</p>
+            </div>
+          )} */}
+
+          {sessions.length > 1 ? (
+            <TimeSlotComponent
+              key={i}
+              header={
+                <h2>
+                  {dayjs(start).format("h:mm A")} to{" "}
+                  {dayjs(end).format("h:mm A")}
+                </h2>
+              }
+              content={sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="border rounded-xl p-3 my-2 border-gray-700 flex flex-col gap-2"
+                >
+                  <h3 className="text-sm">{session.title}</h3>
+                  <p className="text-xs opacity-90">
+                    {rooms.find((room) => room.id === session.roomId)?.name}
+                  </p>
+                  {session.speakers.map((speakerId) => (
+                    <SpeakerComponent key={speakerId} id={speakerId} />
+                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) =>
+                      category.items
+                        .filter((item) =>
+                          session.categoryItems.includes(item.id)
+                        )
+                        .map((item) => (
+                          <span
+                            key={item.id}
+                            // className="text-xs bg-gray-700 px-1 py-1 rounded mr-2"
+                            className={clsx(
+                              "text-[11px] px-1 py-1 rounded bg-opacity-70",
+                              category.title === "Level" && "bg-[#145bff]",
+                              category.title === "Tags" && "bg-[#03969b]"
+                            )}
+                          >
+                            {item.name}
+                          </span>
+                        ))
+                    )}
+                  </div>
+                </div>
+              ))}
+              status={isStartingSoonOrStarted(start, end)}
+            />
+          ) : (
+            <>
+              <div className="px-3 py-3 border-gray-700 flex flex-col gap-1">
+                <h2 className="text-sm">
+                  {dayjs(start).format("h:mm A")} to{" "}
+                  {dayjs(end).format("h:mm A")}
+                </h2>
+                <h3 className="text-sm">
+                  {sessions[0].title} -{" "}
+                  {rooms.find((room) => room.id === sessions[0].roomId)?.name}
+                </h3>
+              </div>
+            </>
+          )}
+        </>
       ))}
     </>
   );

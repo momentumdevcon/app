@@ -11,7 +11,7 @@ export type Room = z.infer<typeof roomSchema>;
 const sessionSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string(),
+  description: z.string().nullable(),
   startsAt: z.string(),
   endsAt: z.string(),
   speakers: z.array(z.string()),
@@ -67,7 +67,7 @@ const sessionizeSchema = z.object({
 
 export async function getData() {
   const response = await fetch(
-    "https://sessionize.com/api/v2/e3doimvz/view/All"
+    "https://sessionize.com/api/v2/s4ayfppt/view/All"
   );
   const data = await response.json();
   return sessionizeSchema.parse(data);
