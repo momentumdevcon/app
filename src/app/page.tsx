@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import dayjs from "dayjs";
 import clsx from "clsx";
 
-export const revalidate = 10;
+// 10 minutes
+export const revalidate = 10 * 60;
 
 export default function SchedulePage() {
   return (
