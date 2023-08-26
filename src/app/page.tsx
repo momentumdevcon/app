@@ -3,7 +3,7 @@ import { TimeSlotComponent, ConsoleLog } from "./schedule";
 import Image from "next/image";
 import { Suspense } from "react";
 import { differenceInMinutes, format } from "date-fns";
-import { zonedTimeToUtc } from "date-fns-tz";
+import { utcToZonedTime } from "date-fns-tz";
 import clsx from "clsx";
 
 export const revalidate = 60;
@@ -21,7 +21,7 @@ export default function SchedulePage() {
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
   console.log(`now`, new Date().toLocaleTimeString());
-  const now = zonedTimeToUtc(new Date(), "America/New_York");
+  const now = utcToZonedTime(new Date(), "America/New_York");
   console.log(`zonedToUTC`, now.toLocaleTimeString());
 
   const startDiff = differenceInMinutes(new Date(startsAt), now);
