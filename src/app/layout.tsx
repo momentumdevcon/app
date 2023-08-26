@@ -7,9 +7,9 @@ import Link from "next/link";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Momentum Attendee App",
+  title: "Velocity | Attendee Portal",
   description:
-    "Momentum Schedule, Speaker Profiles, Session Feedback, and more!",
+    "Momentum Developer Conference Schedule, Speaker Profiles, Session Feedback, and more!",
 };
 
 export default function RootLayout({
