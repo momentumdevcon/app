@@ -20,9 +20,9 @@ export default function SchedulePage() {
 }
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
-  console.log(new Date().toLocaleTimeString());
+  console.log(`now`, new Date().toLocaleTimeString());
   const now = zonedTimeToUtc(new Date(), "America/New_York");
-  console.log(now.toLocaleTimeString());
+  console.log(`zonedToUTC`, now.toLocaleTimeString());
 
   const startDiff = differenceInMinutes(new Date(startsAt), now);
   const endDiff = differenceInMinutes(new Date(endsAt), now);
