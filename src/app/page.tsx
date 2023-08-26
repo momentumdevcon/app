@@ -20,16 +20,22 @@ export default function SchedulePage() {
 }
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
-  console.log(`now`, new Date().toLocaleTimeString());
-  const now = utcToZonedTime(new Date(), "America/New_York");
-  console.log(`zonedToUTC`, now.toLocaleTimeString());
+  const now = utcToZonedTime(
+    new Date(),
+    // new Date("Oct 19 2023 2023 08:51:13 GMT-0400"), // for testing
+    "America/New_York"
+  );
 
-  const startDiff = differenceInMinutes(new Date(startsAt), now);
-  const endDiff = differenceInMinutes(new Date(endsAt), now);
+  const startDiff = differenceInMinutes(new Date(startsAt), now, {
+    roundingMethod: "floor",
+  });
+  const endDiff = differenceInMinutes(new Date(endsAt), now, {
+    roundingMethod: "floor",
+  });
 
-  if (startDiff < 30) return "soon";
+  if (endDiff < 0) return "ended";
+  if (startDiff < 20 && startDiff >= 0) return "soon";
   if (endDiff < 50) return "started";
-  if (endDiff > 900) return "ended";
 }
 
 type TimeSlot = [string, string, Session[]];
