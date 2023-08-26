@@ -20,6 +20,7 @@ export default function SchedulePage() {
 }
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
+  console.log(new Date().toLocaleTimeString());
   const now = zonedTimeToUtc(new Date(), "America/New_York");
   console.log(now.toLocaleTimeString());
 
