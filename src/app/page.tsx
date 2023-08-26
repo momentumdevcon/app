@@ -2,7 +2,8 @@ import { getData, Session } from "@/sessionize";
 import { TimeSlotComponent, ConsoleLog } from "./schedule";
 import Image from "next/image";
 import { Suspense } from "react";
-import dayjs from "dayjs";
+import { differenceInMinutes, format } from "date-fns";
+import { zonedTimeToUtc } from "date-fns-tz";
 import clsx from "clsx";
 
 export const revalidate = 60;
@@ -19,13 +20,11 @@ export default function SchedulePage() {
 }
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
-  const now = dayjs();
-  console.log(now.format("h:mm A"));
-  const start = dayjs(startsAt);
-  const end = dayjs(endsAt);
+  const now = zonedTimeToUtc(new Date(), "America/New_York");
+  console.log(now.toLocaleTimeString());
 
-  const startDiff = start.diff(now, "minute") % (60 * 24);
-  const endDiff = end.diff(now, "minute") % (60 * 24);
+  const startDiff = differenceInMinutes(new Date(startsAt), now);
+  const endDiff = differenceInMinutes(new Date(endsAt), now);
 
   if (startDiff < 30) return "soon";
   if (endDiff < 50) return "started";
@@ -36,7 +35,7 @@ type TimeSlot = [string, string, Session[]];
 
 async function Schedule() {
   const { rooms, sessions, categories } = await getData();
-  console.log("blahblah");
+
   const timeSlots = sessions.reduce<TimeSlot[]>((acc, session) => {
     const slot = acc.find(
       ([start, end]) => start === session.startsAt && end === session.endsAt
@@ -64,8 +63,12 @@ async function Schedule() {
                 header={
                   <>
                     <h2>
-                      {dayjs(start).format("h:mm A")} to{" "}
-                      {dayjs(end).format("h:mm A")}
+                      {
+                        // dayjs(start).format("h:mm A")
+                        format(new Date(start), "h:mm a")
+                      }{" "}
+                      to {/* {dayjs(end).format("h:mm A")} */}
+                      {format(new Date(end), "h:mm a")}
                     </h2>{" "}
                     <span className="text-sm opacity-80">
                       {status === "soon"
@@ -124,8 +127,11 @@ async function Schedule() {
               <>
                 <div className="px-3 py-3 border-gray-700 flex flex-col gap-1">
                   <h2 className="text-sm">
-                    {dayjs(start).format("h:mm A")} to{" "}
-                    {dayjs(end).format("h:mm A")}
+                    {/* {dayjs(start).format("h:mm A")} to{" "}
+                    {dayjs(end).format("h:mm A")} */}
+                    {format(new Date(start), "h:mm a")}
+                    {" to "}
+                    {format(new Date(end), "h:mm a")}
                   </h2>
                   <h3 className="text-sm">
                     {sessions[0].title} -{" "}
