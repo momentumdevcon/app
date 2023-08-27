@@ -4,7 +4,7 @@ import { remultNextApp } from "remult/remult-next";
 import { createPostgresDataProvider } from "remult/postgres";
 import { env } from "@/env";
 
-export const api = remultNextApp({
+const api = remultNextApp({
   entities: [Bookmark],
   getUser: async () => {
     const { userId } = auth();
