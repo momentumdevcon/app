@@ -22,8 +22,8 @@ export default function SchedulePage() {
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
   const now = utcToZonedTime(
-    // new Date(),
-    new Date("Oct 19 2023 2023 13:51:13 GMT-0400"), // for testing
+    new Date(),
+    // new Date("Oct 19 2023 2023 12:30:13 GMT-0400"), // for testing
     "America/New_York"
   );
 
@@ -129,7 +129,8 @@ async function Schedule() {
                 ))}
                 status={status}
                 className={clsx(
-                  "py-2 px-4 bg-momentum w-full my-1 rounded-xl flex gap-2 items-center",
+                  "py-2 px-4 w-full my-1 rounded-xl flex gap-2 items-center",
+                  !status && "bg-momentum",
                   status === "soon" && "bg-green-700",
                   status === "started" && "bg-yellow-700",
                   status === "ended" && "bg-gray-700"
