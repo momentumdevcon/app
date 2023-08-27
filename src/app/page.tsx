@@ -1,10 +1,11 @@
 import { getData, Session } from "@/sessionize";
-import { TimeSlotComponent, ConsoleLog } from "./schedule";
+import { TimeSlotComponent } from "./(schedule)/time-slot";
 import Image from "next/image";
 import { Suspense } from "react";
 import { differenceInMinutes, format } from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
 import clsx from "clsx";
+import { BookmarkComponent, SessionWithBookmark } from "./(bookmarks)/Bookmark";
 
 export const revalidate = 60;
 
@@ -21,8 +22,8 @@ export default function SchedulePage() {
 
 function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
   const now = utcToZonedTime(
-    new Date(),
-    // new Date("Oct 19 2023 2023 08:51:13 GMT-0400"), // for testing
+    // new Date(),
+    new Date("Oct 19 2023 2023 13:51:13 GMT-0400"), // for testing
     "America/New_York"
   );
 
@@ -59,7 +60,6 @@ async function Schedule() {
 
   return (
     <>
-      {/* <ConsoleLog {...{ rooms, sessions, categories }} /> */}
       {timeSlots.map(([start, end, sessions], i) => {
         const status = isStartingSoonOrStarted(start, end);
         return (
@@ -70,11 +70,7 @@ async function Schedule() {
                 header={
                   <>
                     <h2>
-                      {
-                        // dayjs(start).format("h:mm A")
-                        format(new Date(start), "h:mm a")
-                      }{" "}
-                      to {/* {dayjs(end).format("h:mm A")} */}
+                      {format(new Date(start), "h:mm a")} to{" "}
                       {format(new Date(end), "h:mm a")}
                     </h2>{" "}
                     <span className="text-sm opacity-80">
@@ -89,14 +85,23 @@ async function Schedule() {
                   </>
                 }
                 content={sessions.map((session) => (
-                  <div
+                  <SessionWithBookmark
                     key={session.id}
+                    session={session}
                     className="border rounded-xl p-3 my-2 border-gray-700 flex flex-col gap-2"
                   >
-                    <h3 className="text-sm">{session.title}</h3>
-                    <p className="text-xs opacity-90">
-                      {rooms.find((room) => room.id === session.roomId)?.name}
-                    </p>
+                    <div className="flex gap-2">
+                      <div className="grow flex flex-col gap-2">
+                        <h3 className="text-sm">{session.title}</h3>
+                        <p className="text-xs opacity-90">
+                          {
+                            rooms.find((room) => room.id === session.roomId)
+                              ?.name
+                          }
+                        </p>
+                      </div>
+                      <BookmarkComponent session={session} />
+                    </div>
                     {session.speakers.map((speakerId) => (
                       <SpeakerComponent key={speakerId} id={speakerId} />
                     ))}
@@ -120,7 +125,7 @@ async function Schedule() {
                           ))
                       )}
                     </div>
-                  </div>
+                  </SessionWithBookmark>
                 ))}
                 status={status}
                 className={clsx(
@@ -134,10 +139,7 @@ async function Schedule() {
               <>
                 <div className="px-3 py-3 border-gray-700 flex flex-col gap-1">
                   <h2 className="text-sm">
-                    {/* {dayjs(start).format("h:mm A")} to{" "}
-                    {dayjs(end).format("h:mm A")} */}
-                    {format(new Date(start), "h:mm a")}
-                    {" to "}
+                    {format(new Date(start), "h:mm a")} to{" "}
                     {format(new Date(end), "h:mm a")}
                   </h2>
                   <h3 className="text-sm">

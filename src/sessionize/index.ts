@@ -67,7 +67,8 @@ const sessionizeSchema = z.object({
 
 export async function getData() {
   const response = await fetch(
-    "https://sessionize.com/api/v2/s4ayfppt/view/All"
+    "https://sessionize.com/api/v2/s4ayfppt/view/All",
+    { cache: "force-cache" }
   );
   const data = await response.json();
   return sessionizeSchema.parse(data);

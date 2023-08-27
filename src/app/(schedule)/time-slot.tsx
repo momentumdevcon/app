@@ -30,8 +30,3 @@ export function TimeSlotComponent({
     </Collapsible>
   );
 }
-
-export function ConsoleLog(props: any) {
-  console.log(props);
-  return null;
-}
