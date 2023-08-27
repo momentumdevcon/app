@@ -62,94 +62,85 @@ async function Schedule() {
     <>
       {timeSlots.map(([start, end, sessions], i) => {
         const status = isStartingSoonOrStarted(start, end);
-        return (
-          <>
-            {sessions.length > 1 ? (
-              <TimeSlotComponent
-                key={i}
-                header={
-                  <>
-                    <h2>
-                      {format(new Date(start), "h:mm a")} to{" "}
-                      {format(new Date(end), "h:mm a")}
-                    </h2>{" "}
-                    <span className="text-sm opacity-80">
-                      {status === "soon"
-                        ? "(Starting soon)"
-                        : status === "started"
-                        ? "(In progress)"
-                        : status === "ended"
-                        ? "(Ended)"
-                        : null}
-                    </span>
-                  </>
-                }
-                content={sessions.map((session) => (
-                  <SessionWithBookmark
-                    key={session.id}
-                    session={session}
-                    className="border rounded-xl p-3 my-2 border-gray-700 flex flex-col gap-2"
-                  >
-                    <div className="flex gap-2">
-                      <div className="grow flex flex-col gap-2">
-                        <h3 className="text-sm">{session.title}</h3>
-                        <p className="text-xs opacity-90">
-                          {
-                            rooms.find((room) => room.id === session.roomId)
-                              ?.name
-                          }
-                        </p>
-                      </div>
-                      <BookmarkComponent session={session} />
-                    </div>
-                    {session.speakers.map((speakerId) => (
-                      <SpeakerComponent key={speakerId} id={speakerId} />
-                    ))}
-                    <div className="flex flex-wrap gap-2">
-                      {categories.map((category) =>
-                        category.items
-                          .filter((item) =>
-                            session.categoryItems.includes(item.id)
-                          )
-                          .map((item) => (
-                            <span
-                              key={item.id}
-                              className={clsx(
-                                "text-[11px] text-white px-1 py-1 rounded bg-opacity-70",
-                                category.title === "Level" && "bg-[#145bff]",
-                                category.title === "Tags" && "bg-[#03969b]"
-                              )}
-                            >
-                              {item.name}
-                            </span>
-                          ))
-                      )}
-                    </div>
-                  </SessionWithBookmark>
-                ))}
-                status={status}
-                className={clsx(
-                  "py-2 px-4 w-full my-1 rounded-xl flex gap-2 items-center",
-                  !status && "bg-momentum",
-                  status === "soon" && "bg-green-700",
-                  status === "started" && "bg-yellow-700",
-                  status === "ended" && "bg-gray-700"
-                )}
-              />
-            ) : (
+        return sessions.length > 1 ? (
+          <TimeSlotComponent
+            key={i}
+            header={
               <>
-                <div className="px-3 py-3 border-gray-700 flex flex-col gap-1">
-                  <h2 className="text-sm">
-                    {format(new Date(start), "h:mm a")} to{" "}
-                    {format(new Date(end), "h:mm a")}
-                  </h2>
-                  <h3 className="text-sm">
-                    {sessions[0].title} -{" "}
-                    {rooms.find((room) => room.id === sessions[0].roomId)?.name}
-                  </h3>
-                </div>
+                <h2>
+                  {format(new Date(start), "h:mm a")} to{" "}
+                  {format(new Date(end), "h:mm a")}
+                </h2>{" "}
+                <span className="text-sm opacity-80">
+                  {status === "soon"
+                    ? "(Starting soon)"
+                    : status === "started"
+                    ? "(In progress)"
+                    : status === "ended"
+                    ? "(Ended)"
+                    : null}
+                </span>
               </>
+            }
+            content={sessions.map((session) => (
+              <SessionWithBookmark
+                key={session.id}
+                session={session}
+                className="border rounded-xl p-3 my-2 border-gray-700 flex flex-col gap-2"
+              >
+                <div className="flex gap-2">
+                  <div className="grow flex flex-col gap-2">
+                    <h3 className="text-sm">{session.title}</h3>
+                    <p className="text-xs opacity-90">
+                      {rooms.find((room) => room.id === session.roomId)?.name}
+                    </p>
+                  </div>
+                  <BookmarkComponent session={session} />
+                </div>
+                {session.speakers.map((speakerId) => (
+                  <SpeakerComponent key={speakerId} id={speakerId} />
+                ))}
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) =>
+                    category.items
+                      .filter((item) => session.categoryItems.includes(item.id))
+                      .map((item) => (
+                        <span
+                          key={item.id}
+                          className={clsx(
+                            "text-[11px] text-white px-1 py-1 rounded bg-opacity-70",
+                            category.title === "Level" && "bg-[#145bff]",
+                            category.title === "Tags" && "bg-[#03969b]"
+                          )}
+                        >
+                          {item.name}
+                        </span>
+                      ))
+                  )}
+                </div>
+              </SessionWithBookmark>
+            ))}
+            status={status}
+            className={clsx(
+              "py-2 px-4 w-full my-1 rounded-xl flex gap-2 items-center",
+              !status && "bg-momentum",
+              status === "soon" && "bg-green-700",
+              status === "started" && "bg-yellow-700",
+              status === "ended" && "bg-gray-700"
             )}
+          />
+        ) : (
+          <>
+            <div className="px-3 py-3 border-gray-700 flex flex-col gap-1">
+              <h2 className="text-sm">
+                {format(new Date(start), "h:mm a")} to{" "}
+                {format(new Date(end), "h:mm a")}
+              </h2>
+              <h3 className="text-sm">
+                {sessions[0].title} -{" "}
+                {rooms.find((room) => room.id === sessions[0].roomId)?.name}
+              </h3>
+            </div>
           </>
         );
       })}
