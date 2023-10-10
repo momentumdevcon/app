@@ -27,10 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <Providers>
-        <html lang="en">
-          <body className={inter.className}>
+    <Providers>
+      <html lang="en">
+        <body className={`${inter.className} bg-black text-white`}>
+          <ClerkProvider>
             <header className="flex justify-between items-center px-4">
               <Link href="/">
                 <Image src={logoImg} alt="Momentum" width={64} height={64} />
@@ -50,10 +50,10 @@ export default function RootLayout({
               </SignedOut>
             </header>
             {children}
-            <Toaster />
-          </body>
-        </html>
-      </Providers>
-    </ClerkProvider>
+          </ClerkProvider>
+          <Toaster />
+        </body>
+      </html>
+    </Providers>
   );
 }

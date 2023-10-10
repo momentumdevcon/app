@@ -1,7 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import { remult } from "remult";
-import { Bookmark } from "./entity";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaBookmark, FaRegBookmark, FaSpinner } from "react-icons/fa";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,38 +8,62 @@ import { PropsWithChildren, useEffect } from "react";
 import { Session } from "@/sessionize";
 import clsx from "clsx";
 import { remultLocal } from "./local";
+import { AttendanceRecord } from "../attendance-entity";
 
-const bookmarkRepo = remult.repo(Bookmark);
-const bookmarkLocalRepo = remultLocal.repo(Bookmark);
+const attendanceRepo = remult.repo(AttendanceRecord);
+const attendanceLocalRepo = remultLocal.repo(AttendanceRecord);
 
-const getBookmarkRepo = (user: any) =>
-  user ? bookmarkRepo : bookmarkLocalRepo;
+const getAttendanceRepo = (user: any) =>
+  user ? attendanceRepo : attendanceLocalRepo;
 
-function useBookmarks() {
+function useBookmark(sessionId: string) {
   const { user } = useUser();
   const userId = user?.id || "local";
 
-  const repo = getBookmarkRepo(user);
+  const repo = getAttendanceRepo(user);
 
   const qc = useQueryClient();
 
-  const { data: bookmarks } = useQuery([`bookmarks`, userId], () =>
-    repo.find()
+  const { data: attendanceRecords } = useQuery(
+    [`attendance`, { userId, sessionId }],
+    () =>
+      repo.find({ where: { userId, sessionId }, orderBy: { version: "asc" } }),
   );
+  console.log(sessionId, { attendanceRecords });
+  const isBookmarked = attendanceRecords?.reduce((res, record) => {
+    if (record.event.type === "added-to-bookmarks") return true;
+    if (record.event.type === "removed-from-bookmarks") return false;
+    return res;
+  }, false);
 
-  async function toggleBookmark(
-    sessionId: string,
-    existingBookmark?: Bookmark
-  ) {
-    if (existingBookmark) {
-      await repo.delete(existingBookmark);
-    } else {
-      await repo.insert({ userId, sessionId });
+  async function toggleBookmark() {
+    try {
+      if (isBookmarked) {
+        await AttendanceRecord.push(
+          {
+            sessionId,
+            userId,
+            event: { type: "removed-from-bookmarks" },
+          },
+          repo,
+        );
+      } else {
+        await AttendanceRecord.push(
+          {
+            sessionId,
+            userId,
+            event: { type: "added-to-bookmarks" },
+          },
+          repo,
+        );
+      }
+      qc.invalidateQueries([`attendance`, { userId, sessionId }]);
+    } catch (err) {
+      console.error(err);
     }
-    qc.invalidateQueries([`bookmarks`]);
   }
 
-  return { bookmarks, toggleBookmark };
+  return { isBookmarked, toggleBookmark };
 }
 
 export function BookmarkComponent({ session }: { session: Session }) {
@@ -51,22 +74,19 @@ export function BookmarkComponent({ session }: { session: Session }) {
       const timer = setTimeout(dismiss, 5000);
       return () => clearTimeout(timer);
     }
-  }, [toasts]);
+  }, [toasts, dismiss]);
 
-  const { bookmarks, toggleBookmark } = useBookmarks();
-
-  const bookmark = bookmarks?.find((b) => b.sessionId === session.id);
+  const { isBookmarked, toggleBookmark } = useBookmark(session.id);
 
   const { mutate, status } = useMutation(async function () {
     try {
-      if (bookmark) {
-        await toggleBookmark(session.id, bookmark);
+      await toggleBookmark();
+      if (isBookmarked) {
         toast({
           title: `${session.title.substring(0, 30)}... removed from bookmarks`,
-          className: "bg-red-800 m-auto bg-opacity-90 border-none",
+          className: "bg-green-800 m-auto bg-opacity-90 border-none",
         });
       } else {
-        await toggleBookmark(session.id);
         toast({
           title: `${session.title.substring(0, 30)}... added to bookmarks`,
           className: "bg-green-800 m-auto bg-opacity-90 border-none",
@@ -84,11 +104,11 @@ export function BookmarkComponent({ session }: { session: Session }) {
     <button
       className="text-2xl"
       onClick={() => mutate()}
-      title={bookmark ? "Remove bookmark" : "Add bookmark"}
+      title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
     >
       {status === "loading" ? (
-        <FaSpinner />
-      ) : bookmark ? (
+        <FaSpinner className="animate-spin" />
+      ) : isBookmarked ? (
         <FaBookmark />
       ) : (
         <FaRegBookmark />
@@ -102,13 +122,14 @@ export function SessionWithBookmark({
   className,
   children,
 }: PropsWithChildren<{ session: Session; className: string }>) {
-  const { bookmarks } = useBookmarks();
-
-  const bookmark = bookmarks?.find((b) => b.sessionId === session.id);
+  const { isBookmarked } = useBookmark(session.id);
 
   return (
     <div
-      className={clsx(className, bookmark ? "bg-momentum" : "border-gray-700")}
+      className={clsx(
+        className,
+        isBookmarked ? "bg-momentum" : "border-gray-700",
+      )}
     >
       {children}
     </div>

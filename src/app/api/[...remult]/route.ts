@@ -1,11 +1,11 @@
-import { Bookmark } from "@/app/(bookmarks)/entity";
 import { auth } from "@clerk/nextjs";
 import { remultNextApp } from "remult/remult-next";
 import { createPostgresDataProvider } from "remult/postgres";
 import { env } from "@/env";
+import { AttendanceRecord } from "@/app/attendance-entity";
 
 const api = remultNextApp({
-  entities: [Bookmark],
+  entities: [AttendanceRecord],
   getUser: async () => {
     const { userId } = auth();
     if (userId) return { id: userId };

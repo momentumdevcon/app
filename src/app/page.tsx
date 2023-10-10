@@ -6,6 +6,7 @@ import { differenceInMinutes, format } from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
 import clsx from "clsx";
 import { BookmarkComponent, SessionWithBookmark } from "./(bookmarks)/Bookmark";
+import Link from "next/link";
 
 export const revalidate = 60;
 
@@ -14,6 +15,7 @@ export default function SchedulePage() {
     <main className="px-5">
       <h1 className="text-4xl font-semibold my-4">Schedule</h1>
       <Suspense fallback={<p>Loading...</p>}>
+        {/* @ts-expect-error */}
         <Schedule />
       </Suspense>
     </main>
@@ -90,7 +92,11 @@ async function Schedule() {
               >
                 <div className="flex gap-2">
                   <div className="grow flex flex-col gap-2">
-                    <h3 className="text-sm">{session.title}</h3>
+                    <Link href={`/session/${session.id}`}>
+                      <h3 className="text-sm hover:underline">
+                        {session.title}
+                      </h3>
+                    </Link>
                     <p className="text-xs opacity-90">
                       {rooms.find((room) => room.id === session.roomId)?.name}
                     </p>
@@ -98,6 +104,7 @@ async function Schedule() {
                   <BookmarkComponent session={session} />
                 </div>
                 {session.speakers.map((speakerId) => (
+                  // @ts-expect-error
                   <SpeakerComponent key={speakerId} id={speakerId} />
                 ))}
                 <div className="flex flex-wrap gap-2">

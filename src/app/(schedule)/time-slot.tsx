@@ -19,7 +19,6 @@ export function TimeSlotComponent({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  console.log(`dsfjbiefbvhuerjfbdekhljfvbidl`);
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className={className}>
