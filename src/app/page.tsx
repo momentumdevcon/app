@@ -15,7 +15,6 @@ export default function SchedulePage() {
     <main className="px-5">
       <h1 className="text-4xl font-semibold my-4">Schedule</h1>
       <Suspense fallback={<p>Loading...</p>}>
-        {/* @ts-expect-error */}
         <Schedule />
       </Suspense>
     </main>
@@ -26,7 +25,7 @@ function isStartingSoonOrStarted(startsAt: string, endsAt: string) {
   const now = utcToZonedTime(
     new Date(),
     // new Date("Oct 19 2023 2023 12:30:13 GMT-0400"), // for testing
-    "America/New_York"
+    "America/New_York",
   );
 
   const startDiff = differenceInMinutes(new Date(startsAt), now, {
@@ -48,7 +47,7 @@ async function Schedule() {
 
   const timeSlots = sessions.reduce<TimeSlot[]>((acc, session) => {
     const slot = acc.find(
-      ([start, end]) => start === session.startsAt && end === session.endsAt
+      ([start, end]) => start === session.startsAt && end === session.endsAt,
     );
 
     if (slot) {
@@ -104,7 +103,6 @@ async function Schedule() {
                   <BookmarkComponent session={session} />
                 </div>
                 {session.speakers.map((speakerId) => (
-                  // @ts-expect-error
                   <SpeakerComponent key={speakerId} id={speakerId} />
                 ))}
                 <div className="flex flex-wrap gap-2">
@@ -117,12 +115,12 @@ async function Schedule() {
                           className={clsx(
                             "text-[11px] text-white px-1 py-1 rounded bg-opacity-70",
                             category.title === "Level" && "bg-[#145bff]",
-                            category.title === "Tags" && "bg-[#03969b]"
+                            category.title === "Tags" && "bg-[#03969b]",
                           )}
                         >
                           {item.name}
                         </span>
-                      ))
+                      )),
                   )}
                 </div>
               </SessionWithBookmark>
@@ -133,7 +131,7 @@ async function Schedule() {
               !status && "bg-momentum",
               status === "soon" && "bg-green-700",
               status === "started" && "bg-yellow-700",
-              status === "ended" && "bg-gray-700"
+              status === "ended" && "bg-gray-700",
             )}
           />
         ) : (
