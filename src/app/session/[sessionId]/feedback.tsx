@@ -2,9 +2,10 @@
 
 import { AttendanceRecord } from "@/app/attendance-entity";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BsEmojiFrownFill,
   BsEmojiNeutralFill,
@@ -16,8 +17,16 @@ import { remult } from "remult";
 const attendanceRepo = remult.repo(AttendanceRecord);
 
 export function Feedback({ sessionId }: { sessionId: string }) {
+  const { toast, toasts, dismiss } = useToast();
   const { user } = useUser();
   const [state, setState] = useState<"rating" | "review">("rating");
+
+  useEffect(() => {
+    if (toasts.length > 0) {
+      const timer = setTimeout(dismiss, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toasts, dismiss]);
 
   const userId = user?.id;
   const qc = useQueryClient();
@@ -57,6 +66,11 @@ export function Feedback({ sessionId }: { sessionId: string }) {
       );
       qc.invalidateQueries([`attendance`, { userId, sessionId }]);
       if (!hasRated) setState("review");
+      toast({
+        title: `Rating submitted!`,
+        description: `Thanks for your feedback!`,
+        className: "bg-green-800 m-auto bg-opacity-90 border-none",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -77,12 +91,19 @@ export function Feedback({ sessionId }: { sessionId: string }) {
           attendanceRepo,
         );
         qc.invalidateQueries([`attendance`, { userId, sessionId }]);
-        if (!hasRated) setState("review");
+        toast({
+          title: `Review submitted!`,
+          description: `Thanks for your feedback!`,
+          className: "bg-green-800 m-auto bg-opacity-90 border-none",
+        });
       } catch (err) {
         console.error(err);
       }
     },
   );
+
+  const isCurrentlyRating = (rating: 0 | 1 | 2) =>
+    ratingStatus === "loading" && ratingArg === rating;
 
   return (
     <>
@@ -92,27 +113,45 @@ export function Feedback({ sessionId }: { sessionId: string }) {
           <div className="grid grid-cols-3">
             <button
               className="py-4 text-2xl flex justify-center bg-red-500 bg-opacity-50 rounded m-2 disabled:opacity-50 disabled:outline"
-              // @ts-expect-error
-              disabled={hasRated?.event.reaction === 0}
+              disabled={
+                // @ts-expect-error
+                hasRated?.event.reaction === 0 || isCurrentlyRating(0)
+              }
               onClick={() => rateTalk(0)}
             >
-              <BsEmojiFrownFill />
+              {isCurrentlyRating(0) ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <BsEmojiFrownFill />
+              )}
             </button>
             <button
               className="py-4 text-2xl flex justify-center bg-yellow-400 bg-opacity-50 rounded m-2 disabled:opacity-50 disabled:outline"
-              // @ts-expect-error
-              disabled={hasRated?.event.reaction === 1}
+              disabled={
+                // @ts-expect-error
+                hasRated?.event.reaction === 1 || isCurrentlyRating(1)
+              }
               onClick={() => rateTalk(1)}
             >
-              <BsEmojiNeutralFill />
+              {isCurrentlyRating(1) ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <BsEmojiNeutralFill />
+              )}
             </button>
             <button
               className="py-4 text-2xl flex justify-center bg-green-500 bg-opacity-50 rounded m-2 disabled:opacity-50 disabled:outline"
-              // @ts-expect-error
-              disabled={hasRated?.event.reaction === 2}
+              disabled={
+                // @ts-expect-error
+                hasRated?.event.reaction === 2 || isCurrentlyRating(2)
+              }
               onClick={() => rateTalk(2)}
             >
-              <BsEmojiSmileFill />
+              {isCurrentlyRating(2) ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <BsEmojiSmileFill />
+              )}
             </button>
           </div>
           {hasRated && (
@@ -123,8 +162,17 @@ export function Feedback({ sessionId }: { sessionId: string }) {
         </div>
       ) : state === "review" ? (
         <div className="bg-white rounded-sm text-sm bg-opacity-10 text-center my-2 pt-2 px-4">
-          Thanks for the rating! <br /> Would you like to write a review for
-          this talk? <br />
+          {hasReviewed ? (
+            <>
+              Your review has been submitted! <br /> You can update your review
+              here
+            </>
+          ) : (
+            <>
+              Thanks for the rating! <br /> Would you like to write a review for
+              this talk? <br />
+            </>
+          )}
           <form
             className="py-2 flex flex-col gap-2"
             onSubmit={async (e) => {
@@ -137,6 +185,9 @@ export function Feedback({ sessionId }: { sessionId: string }) {
               name="review"
               aria-label=""
               className="bg-gray-100 text-black w-full rounded p-2"
+              // @ts-expect-error
+              defaultValue={hasReviewed?.event.review}
+              key={hasReviewed?.id}
             />
             <Button type="submit" className="bg-momentum rounded">
               {reviewStatus === "loading" ? (

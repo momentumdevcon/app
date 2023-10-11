@@ -71,7 +71,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
 
   useEffect(() => {
     if (toasts.length > 0) {
-      const timer = setTimeout(dismiss, 5000);
+      const timer = setTimeout(dismiss, 3000);
       return () => clearTimeout(timer);
     }
   }, [toasts, dismiss]);
