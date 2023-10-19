@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Velocity | Attendee Portal",
+  title: "Momentum | Attendee Portal",
   description:
     "Momentum Developer Conference Schedule, Speaker Profiles, Session Feedback, and more!",
 };
