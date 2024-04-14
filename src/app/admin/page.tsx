@@ -1,5 +1,5 @@
 import { getData } from "@/sessionize";
-import Feedback from "./feedback";
+// import Feedback from "./feedback";
 import { OrganizationSwitcher, auth } from "@clerk/nextjs";
 
 export const metadata = {
@@ -24,7 +24,8 @@ export default async function AdminPage() {
         />
       </div>
       {orgSlug === "momentum" ? (
-        <Feedback sessions={sessions} speakers={speakers} />
+        // <Feedback sessions={sessions} speakers={speakers} />
+        `Coming Soon`
       ) : (
         <div className="text-center">
           <h1 className="text-3xl font-semibold my-4">Access Denied</h1>

@@ -17,7 +17,7 @@ import { useSubscribe } from "@rocicorp/reflect/react";
 import { useMutation } from "@tanstack/react-query";
 import { Session } from "@/sessionize";
 
-const sessionAttendanceContext = createContext<
+export const sessionAttendanceContext = createContext<
   Reflect<typeof mutators> | undefined
 >(undefined);
 
@@ -32,9 +32,11 @@ export function SessionAttendanceProvider(props: { children: ReactNode }) {
 
     setR(
       new Reflect({
+        server: "http://localhost:8080",
         roomID: `sessions-${userId}`,
         userID: userId,
         mutators,
+        kvStore: "idb",
       }),
     );
   }, [userId]);
