@@ -30,27 +30,25 @@ export default function RootLayout({
     <Providers>
       <html lang="en">
         <body className={`${inter.className} bg-black text-white`}>
-          <ClerkProvider>
-            <header className="flex justify-between items-center px-4">
-              <Link href="/">
-                <Image src={logoImg} alt="Momentum" width={64} height={64} />
-              </Link>
-              <SignedIn>
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonPopoverActionButton__manageAccount: "hidden",
-                    },
-                  }}
-                />
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal" />
-              </SignedOut>
-            </header>
-            {children}
-          </ClerkProvider>
+          <header className="flex justify-between items-center px-4">
+            <Link href="/">
+              <Image src={logoImg} alt="Momentum" width={64} height={64} />
+            </Link>
+            <SignedIn>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonPopoverActionButton__manageAccount: "hidden",
+                  },
+                }}
+              />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal" />
+            </SignedOut>
+          </header>
+          {children}
           <Toaster />
         </body>
       </html>

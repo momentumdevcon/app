@@ -1,69 +1,67 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { remult } from "remult";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaBookmark, FaRegBookmark, FaSpinner } from "react-icons/fa";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { useToast } from "@/components/ui/use-toast";
-import { PropsWithChildren, useEffect } from "react";
-import { Session } from "@/sessionize";
+import {
+  PropsWithChildren,
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import clsx from "clsx";
-import { remultLocal } from "./local";
-import { AttendanceRecord } from "../attendance-entity";
+import { Reflect } from "@rocicorp/reflect/client";
+import { SessionAttendance, mutators } from "../mutators";
+import { useSubscribe } from "@rocicorp/reflect/react";
+import { Session } from "@/sessionize";
 
-const attendanceRepo = remult.repo(AttendanceRecord);
-const attendanceLocalRepo = remultLocal.repo(AttendanceRecord);
+export const sessionAttendanceContext = createContext<
+  Reflect<typeof mutators> | undefined
+>(undefined);
 
-const getAttendanceRepo = (user: any) =>
-  user ? attendanceRepo : attendanceLocalRepo;
+export function SessionAttendanceProvider(props: { children: ReactNode }) {
+  const { user } = useUser();
+  const userId = user?.id;
+
+  const [r, setR] = useState<Reflect<typeof mutators>>();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    setR(
+      new Reflect({
+        server: "http://localhost:8080",
+        roomID: `sessions-${userId}`,
+        userID: userId,
+        mutators,
+        kvStore: "idb",
+      }),
+    );
+  }, [userId]);
+
+  return (
+    <sessionAttendanceContext.Provider value={r}>
+      {props.children}
+    </sessionAttendanceContext.Provider>
+  );
+}
 
 function useBookmark(sessionId: string) {
-  const { user } = useUser();
-  const userId = user?.id || "local";
+  const r = useContext(sessionAttendanceContext);
 
-  const repo = getAttendanceRepo(user);
-
-  const qc = useQueryClient();
-
-  const { data: attendanceRecords } = useQuery(
-    [`attendance`, { userId, sessionId }],
-    () =>
-      repo.find({ where: { userId, sessionId }, orderBy: { version: "asc" } }),
+  const session = useSubscribe(
+    r,
+    (tx) => tx.get<SessionAttendance>(`session:${sessionId}`),
+    null,
   );
-  console.log(sessionId, { attendanceRecords });
-  const isBookmarked = attendanceRecords?.reduce((res, record) => {
-    if (record.event.type === "added-to-bookmarks") return true;
-    if (record.event.type === "removed-from-bookmarks") return false;
-    return res;
-  }, false);
 
   async function toggleBookmark() {
-    try {
-      if (isBookmarked) {
-        await AttendanceRecord.push(
-          {
-            sessionId,
-            userId,
-            event: { type: "removed-from-bookmarks" },
-          },
-          repo,
-        );
-      } else {
-        await AttendanceRecord.push(
-          {
-            sessionId,
-            userId,
-            event: { type: "added-to-bookmarks" },
-          },
-          repo,
-        );
-      }
-      qc.invalidateQueries([`attendance`, { userId, sessionId }]);
-    } catch (err) {
-      console.error(err);
-    }
+    if (!r) throw new Error(`Something went wrong!`);
+    await r.mutate.toggleBookmark(sessionId);
   }
 
-  return { isBookmarked, toggleBookmark };
+  return { isBookmarked: session?.bookmarked, toggleBookmark };
 }
 
 export function BookmarkComponent({ session }: { session: Session }) {
@@ -78,7 +76,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
 
   const { isBookmarked, toggleBookmark } = useBookmark(session.id);
 
-  const { mutate, status } = useMutation(async function () {
+  const mutate = async function () {
     try {
       await toggleBookmark();
       if (isBookmarked) {
@@ -93,12 +91,13 @@ export function BookmarkComponent({ session }: { session: Session }) {
         });
       }
     } catch (e) {
+      console.error(e);
       toast({
         title: `Error saving bookmarks, please try again`,
         className: "bg-red-800 m-auto bg-opacity-90 border-none",
       });
     }
-  });
+  };
 
   return (
     <button
@@ -106,13 +105,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
       onClick={() => mutate()}
       title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
     >
-      {status === "loading" ? (
-        <FaSpinner className="animate-spin" />
-      ) : isBookmarked ? (
-        <FaBookmark />
-      ) : (
-        <FaRegBookmark />
-      )}
+      {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
     </button>
   );
 }
