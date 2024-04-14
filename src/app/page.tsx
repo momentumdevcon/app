@@ -5,7 +5,11 @@ import { Suspense } from "react";
 import { differenceInMinutes, format } from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
 import clsx from "clsx";
-import { BookmarkComponent, SessionWithBookmark } from "./(bookmarks)/Bookmark";
+import {
+  BookmarkComponent,
+  SessionAttendanceProvider,
+  SessionWithBookmark,
+} from "./(bookmarks)/Bookmark";
 import Link from "next/link";
 
 export const revalidate = 60;
@@ -60,7 +64,7 @@ async function Schedule() {
   }, []);
 
   return (
-    <>
+    <SessionAttendanceProvider>
       {timeSlots.map(([start, end, sessions], i) => {
         const status = isStartingSoonOrStarted(start, end);
         return sessions.length > 1 ? (
@@ -149,7 +153,7 @@ async function Schedule() {
           </>
         );
       })}
-    </>
+    </SessionAttendanceProvider>
   );
 }
 
