@@ -1,6 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { FaBookmark, FaRegBookmark, FaSpinner } from "react-icons/fa";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { useToast } from "@/components/ui/use-toast";
 import {
   PropsWithChildren,
@@ -14,7 +14,6 @@ import clsx from "clsx";
 import { Reflect } from "@rocicorp/reflect/client";
 import { SessionAttendance, mutators } from "../mutators";
 import { useSubscribe } from "@rocicorp/reflect/react";
-import { useMutation } from "@tanstack/react-query";
 import { Session } from "@/sessionize";
 
 export const sessionAttendanceContext = createContext<
@@ -77,7 +76,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
 
   const { isBookmarked, toggleBookmark } = useBookmark(session.id);
 
-  const { mutate, status } = useMutation(async function () {
+  const mutate = async function () {
     try {
       await toggleBookmark();
       if (isBookmarked) {
@@ -98,7 +97,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
         className: "bg-red-800 m-auto bg-opacity-90 border-none",
       });
     }
-  });
+  };
 
   return (
     <button
@@ -106,13 +105,7 @@ export function BookmarkComponent({ session }: { session: Session }) {
       onClick={() => mutate()}
       title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
     >
-      {status === "loading" ? (
-        <FaSpinner className="animate-spin" />
-      ) : isBookmarked ? (
-        <FaBookmark />
-      ) : (
-        <FaRegBookmark />
-      )}
+      {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
     </button>
   );
 }

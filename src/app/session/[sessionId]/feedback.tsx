@@ -32,11 +32,13 @@ export function Feedback({ sessionId }: { sessionId: string }) {
     null,
   );
 
-  const rateTalk = async function rateTalk(rating: 0 | 1 | 2) {
+  const hasRated = !(session?.rating === undefined);
+
+  async function rateTalk(rating: 0 | 1 | 2) {
     try {
       if (!r) throw new Error(`Something went wrong`);
       await r.mutate.rateSession({ sessionId, rating });
-      if (!session?.rating) setState("review");
+      if (!hasRated) setState("review");
 
       toast({
         title: `Rating submitted!`,
@@ -46,9 +48,9 @@ export function Feedback({ sessionId }: { sessionId: string }) {
     } catch (err) {
       console.error(err);
     }
-  };
+  }
 
-  const reviewTalk = async function reviewTalk(review: string) {
+  async function reviewTalk(review: string) {
     try {
       if (!r) throw new Error(`Something went wrong`);
       await r.mutate.reviewSession({ sessionId, review });
@@ -60,9 +62,9 @@ export function Feedback({ sessionId }: { sessionId: string }) {
     } catch (err) {
       console.error(err);
     }
-  };
+  }
 
-  if (!session) return null;
+  if (!r) return null;
 
   return (
     <>
@@ -92,7 +94,7 @@ export function Feedback({ sessionId }: { sessionId: string }) {
               <BsEmojiSmileFill />
             </button>
           </div>
-          {!(session?.rating === undefined) && (
+          {hasRated && (
             <Button className="text-xs" onClick={() => setState("review")}>
               Review <FaArrowRight />
             </Button>
